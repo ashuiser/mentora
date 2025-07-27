@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button"
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -24,6 +23,8 @@ import {
 } from "@/components/ui/select"
 import { subjects } from "@/constants"
 import { Textarea } from "./ui/textarea"
+import { createCompanion } from "@/lib/actions/companion.actions"
+import { redirect } from "next/navigation"
 
 const formSchema = z.object({
   name: z.string().min(1, { message: 'Companion name is required.' }),
@@ -31,11 +32,11 @@ const formSchema = z.object({
   topic: z.string().min(1, { message: 'Companion topic is required.' }),
   voice: z.string().min(1, { message: 'Companion voice is required.' }),
   style: z.string().min(1, { message: 'Companion style is required.' }),
-  duration: z.number().min(1, { message: 'Companion duration is required.' }),
+  duration: z.coerce.number().min(1, { message: 'Companion duration is required.' }),
 })
 
 const CompanionForm = () => {
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: '',
@@ -47,8 +48,15 @@ const CompanionForm = () => {
     },
   })
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    console.log(values)
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    const companion = await createCompanion(values);
+
+    if (companion) {
+      redirect(`/companions/${companion.id}`);
+    } else {
+      console.log('Failed to create companion');
+      redirect('/');
+    }
   }
 
   return (
@@ -189,6 +197,7 @@ const CompanionForm = () => {
                   type="number"
                   placeholder="Ex. 15"
                   {...field}
+                  value={field.value as string | number} // Ensure value is a string for input
                   className="input"
                 />
               </FormControl>
