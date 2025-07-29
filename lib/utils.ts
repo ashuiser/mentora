@@ -1,6 +1,7 @@
 import { clsx, type ClassValue } from "clsx"
 import { twMerge } from "tailwind-merge"
 import { subjectsColors, /* voices */ } from "@/constants";
+import qs from "query-string";
 // import { CreateAssistantDTO } from "@vapi-ai/web/dist/api"
 
 export function cn(...inputs: ClassValue[]) {
@@ -9,6 +10,26 @@ export function cn(...inputs: ClassValue[]) {
 
 export const getSubjectColor = (subject: string) => {
   return subjectsColors[subject as keyof typeof subjectsColors];
+};
+
+export const formUrlQuery = ({ params, key, value }: UrlQueryParams) => {
+    const queryString = qs.parse(params);
+    queryString[key] = value;
+    return qs.stringifyUrl({
+        url: window.location.pathname,
+        query: queryString,
+    });
+};
+
+export const removeKeysFromUrlQuery = ({ params, keysToRemove, }: RemoveUrlQueryParams) => {
+    const queryString = qs.parse(params);
+    keysToRemove.forEach((key) => {
+        delete queryString[key];
+    });
+    return qs.stringifyUrl({
+        url: window.location.pathname,
+        query: queryString,
+    }, { skipNull: true });
 };
 
 // export const configureAssistant = (voice: string, style: string) => {
