@@ -72,16 +72,21 @@ export const getCompanion = async (id: string) => {
 export const addToSessionHistory = async (companionId: string) => {
   const { userId } = await auth();
   const supabase = createSupabaseClient();
-  const { data, error } = await supabase.from('session_history')
-    .insert({
+
+  const { data, error } = await supabase
+    .from('session_history')
+    .upsert({
       companion_id: companionId,
       user_id: userId,
+      created_at: new Date().toISOString(), // update timestamp
+    }, {
+      onConflict: 'user_id,companion_id', // use composite key
     });
 
   if (error) throw new Error(error.message);
 
   return data;
-}
+};
 
 export const getRecentSessions = async (limit = 10) => {
   const supabase = createSupabaseClient();
